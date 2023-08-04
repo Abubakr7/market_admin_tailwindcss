@@ -3,6 +3,8 @@ import "./App.css";
 import Login from "./pages/Login";
 import AuthCheck from "./utils/AuthCheck";
 import ProtectRoute from "./utils/ProtectedRoute";
+import Layout from "./layout/Layout";
+import Home from "./pages/dashboard/Home";
 
 const router = createBrowserRouter([
   {
@@ -17,10 +19,15 @@ const router = createBrowserRouter([
     path: "/dashboard",
     element: (
       <ProtectRoute>
-        <>dashboard</>
+        <Layout />
       </ProtectRoute>
     ),
-    children: [],
+    children: [
+      {
+        index: true,
+        element: <Home />,
+      },
+    ],
   },
 ]);
 
