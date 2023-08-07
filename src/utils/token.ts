@@ -19,8 +19,8 @@ function destroyToken() {
 function isValidToken(): boolean {
   const token = getToken() as ITokenType;
 
-  if (token.exp) {
-    if (token.exp * 1000 < Date.now()) {
+  if (token?.exp) {
+    if (token?.exp * 1000 < Date.now()) {
       return true;
     }
   }
