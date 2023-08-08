@@ -6,6 +6,9 @@ import ProtectRoute from "./utils/ProtectedRoute";
 import Layout from "./layout/Layout";
 import Home from "./pages/dashboard/Home";
 import Category from "./pages/dashboard/Category";
+import Products from "./pages/dashboard/Products";
+import Brands from "./pages/dashboard/Brands";
+import SubCategory from "./pages/dashboard/SubCategory";
 
 const router = createBrowserRouter([
   {
@@ -31,6 +34,18 @@ const router = createBrowserRouter([
       {
         path: "category",
         element: <Category />,
+      },
+      {
+        path: "subcategory",
+        element: <SubCategory />,
+      },
+      {
+        path: "products",
+        element: <Products />,
+      },
+      {
+        path: "brands",
+        element: <Brands />,
       },
     ],
   },

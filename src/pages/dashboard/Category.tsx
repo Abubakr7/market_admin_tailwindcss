@@ -30,9 +30,10 @@ const Category = () => {
           const formData = new FormData();
           formData.append("file", file);
           const avatar = await singleFile(formData);
-          await addCategory({
+
+          addCategory({
             name: name,
-            img: avatar.img.path,
+            img: avatar.img,
           });
         }}
       >
@@ -40,7 +41,7 @@ const Category = () => {
       </button>
 
       {data.length > 0 &&
-        data.map((elem) => {
+        data.map((elem: { img: string; name: string; id: number }) => {
           return (
             <div key={elem.id}>
               <img
