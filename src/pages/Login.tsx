@@ -1,6 +1,7 @@
 import { useForm, SubmitHandler } from "react-hook-form";
 import { saveToken } from "../utils/token";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 type Inputs = {
   email: string;
@@ -8,6 +9,7 @@ type Inputs = {
 };
 const Login = () => {
   const navigate = useNavigate();
+  const [errMessage, setErrMessage] = useState("");
   const {
     register,
     handleSubmit,
@@ -23,9 +25,12 @@ const Login = () => {
         body: JSON.stringify(data),
       });
       const token = await repsonse.json();
-      console.log(token);
-      saveToken(token.accessToken);
-      navigate("/dashboard");
+      if (repsonse.ok) {
+        saveToken(token.accessToken);
+        navigate("/dashboard");
+      } else {
+        setErrMessage(token);
+      }
     } catch (error) {
       console.log(error);
     }
@@ -74,7 +79,7 @@ const Login = () => {
                   <span className="text-red-600">This field is required</span>
                 )}
               </div>
-
+              {errMessage && <div style={{ color: "red" }}>{errMessage}</div>}
               <button
                 type="submit"
                 className="bg-[#1266F1] inline-block w-full rounded bg-primary px-7 pb-2.5 pt-3 text-sm font-medium uppercase leading-normal text-white shadow-[0_4px_9px_-4px_#3b71ca] transition duration-150 ease-in-out hover:bg-primary-600 hover:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] focus:bg-primary-600 focus:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] focus:outline-none focus:ring-0 active:bg-primary-700 active:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] dark:shadow-[0_4px_9px_-4px_rgba(59,113,202,0.5)] dark:hover:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)] dark:focus:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)] dark:active:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)]"
