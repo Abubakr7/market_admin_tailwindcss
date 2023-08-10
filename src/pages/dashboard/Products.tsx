@@ -1,25 +1,60 @@
 import { useState } from "react";
-import { useGetProductsQuery } from "../../api/product";
+import { useAddProductMutation, useGetProductsQuery } from "../../api/product";
 import { useGetCategoryQuery } from "../../api/category";
 import { useGetSubCategoriesQuery } from "../../api/subcategory";
 import { useGetBrandsQuery } from "../../api/brands";
 import FormBuilder from "../../components/Formbuilder";
-
+import { multiFiles } from "../../api/api";
+// type Inputs = {
+//   name: string;
+//   categoryId: string;
+//   subCategoryId: string;
+//   brandId: string;
+//   price: number;
+// };
 const Products = () => {
   const [name, setName] = useState("");
+  const [categoryId, setCategoryId] = useState<number>(-1);
+  const [subCategoryId, setSubCategoryId] = useState<number>(-1);
+  const [brandId, setBrandId] = useState<number>(-1);
+  const [price, setPrice] = useState<number>(0);
   const [file, setFile] = useState("");
+  const [disabled, setDisabled] = useState(true);
   const [modal, setModal] = useState<boolean>(false);
-  const [properties, setProperties] = useState([
-    {
-      id: 1,
-      name: "idibek",
-    },
-  ]);
-  const { data = [] } = useGetProductsQuery(name);
-  const { data: category = [] } = useGetCategoryQuery(name);
-  const { data: subcategory = [] } = useGetSubCategoriesQuery(name);
-  const { data: brands = [] } = useGetBrandsQuery(name);
+  const [properties, setProperties] = useState([]);
+  const { data = [] } = useGetProductsQuery("");
+  const { data: category = [] } = useGetCategoryQuery("");
+  const { data: subcategory = [] } = useGetSubCategoriesQuery("");
+  const { data: brands = [] } = useGetBrandsQuery("");
+  const [addProduct] = useAddProductMutation();
 
+  console.log(data);
+
+  const onSubmit = async () => {
+    if (file.length == 0) return alert("Please select file");
+    const formData = new FormData();
+    for (const f of file) {
+      formData.append("files", f);
+    }
+    const data = await multiFiles(formData);
+    const arr = [];
+    for (const img of data.img) {
+      const obj = {
+        type: img.mimetype,
+        src: img.path,
+      };
+      arr.push(obj);
+    }
+    addProduct({
+      name,
+      categoryId: Number(categoryId),
+      subCategoryId: Number(subCategoryId),
+      brandId: Number(brandId),
+      price: Number(price),
+      media: arr,
+      properties,
+    });
+  };
   return (
     <div>
       <h1 className="text-3xl mb-2">Product</h1>
@@ -110,46 +145,71 @@ const Products = () => {
                 </button>
               </div>
               <div className="p-4 overflow-y-auto">
-                <div className="flex items-center justify-evenly">
-                  <div>
+                <div>
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e: ChangeEvent) => setName(e.target.value)}
+                    className="border"
+                  />
+                  <input
+                    type="file"
+                    multiple
+                    onChange={(e: ChangeEvent) => setFile(e.target.files)}
+                  />
+                </div>
+                <div>
+                  <div className="flex py-5 items-center gap-x-10">
+                    <select
+                      onChange={(e: ChangeEvent) =>
+                        setCategoryId(e.target.value)
+                      }
+                    >
+                      {category.length > 0 &&
+                        category.map((item) => {
+                          return (
+                            <option key={item.id} value={item.id}>
+                              {item.name}
+                            </option>
+                          );
+                        })}
+                    </select>
+                    <select
+                      onChange={(e: ChangeEvent) =>
+                        setSubCategoryId(e.target.value)
+                      }
+                    >
+                      {subcategory.length > 0 &&
+                        subcategory.map((item) => {
+                          return (
+                            <option key={item.id} value={item.id}>
+                              {item.name}
+                            </option>
+                          );
+                        })}
+                    </select>
+                    <select
+                      onChange={(e: ChangeEvent) => setBrandId(e.target.value)}
+                    >
+                      {brands.length > 0 &&
+                        brands.map((item) => {
+                          return (
+                            <option key={item.id} value={item.id}>
+                              {item.name}
+                            </option>
+                          );
+                        })}
+                    </select>
                     <input
-                      type="text"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
+                      type="number"
+                      placeholder="Price"
                       className="border"
+                      value={price}
+                      onChange={(e: ChangeEvent) => setPrice(e.target.value)}
                     />
-                    <input
-                      type="file"
-                      onChange={(e: ChangeEvent) => setFile(e.target.files[0])}
-                    />
-                  </div>
-                  <div>
-                    <div className="flex py-5 items-center gap-x-10">
-                      <select>
-                        {category.length > 0 &&
-                          category.map((item) => {
-                            return (
-                              <option key={item.id} value="">
-                                {item.name}
-                              </option>
-                            );
-                          })}
-                      </select>
-                      <select name="" id="">
-                        {subcategory.length > 0 &&
-                          subcategory.map((item) => {
-                            return <option value="">{item.name}</option>;
-                          })}
-                      </select>
-                      <select name="" id="">
-                        {brands.length > 0 &&
-                          brands.map((item) => {
-                            return <option value="">{item.name}</option>;
-                          })}
-                      </select>
-                    </div>
                   </div>
                 </div>
+
                 <div>
                   {properties.map((elem) => {
                     return (
@@ -194,6 +254,7 @@ const Products = () => {
                         </div>
                         <FormBuilder
                           key={elem.id}
+                          setDisable={setDisabled}
                           fieldChange={(values) => {
                             setProperties((prev) => [
                               ...prev.map((item) => {
@@ -205,43 +266,47 @@ const Products = () => {
                             ]);
                           }}
                         />
-                        
                       </div>
                     );
                   })}
                   <div className="flex">
-                          <button
-                          className="border px-3 bg-green-500"
-                            onClick={() => {
-                              let obj = {
-                                id: new Date().getTime(),
-                                name: "",
-                                properties: [],
-                              };
-                              const copy = [...properties, obj];
-                              setProperties(copy);
-                            }}
-                          >
-                            Add field
-                          </button>
-                        </div>
+                    <button
+                      className="border px-3 bg-green-500"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        let obj = {
+                          id: new Date().getTime(),
+                          name: "",
+                          properties: [],
+                        };
+                        const copy = [...properties, obj];
+                        setProperties(copy);
+                      }}
+                    >
+                      Add field
+                    </button>
+                  </div>
                 </div>
-              </div>
-              <div className="flex absolute bottom-0 w-full justify-end gap-x-2 py-3 px-4 border-t dark:border-gray-700">
-                <button
-                  onClick={() => setModal(false)}
-                  type="button"
-                  className="hs-dropdown-toggle py-3 px-4 inline-flex justify-center items-center gap-2 rounded-md border font-medium bg-white text-gray-700 shadow-sm align-middle hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white focus:ring-blue-600 transition-all text-sm dark:bg-slate-900 dark:hover:bg-slate-800 dark:border-gray-700 dark:text-gray-400 dark:hover:text-white dark:focus:ring-offset-gray-800"
-                  data-hs-overlay="#hs-full-screen-modal"
-                >
-                  Close
-                </button>
-                <a
-                  className="py-3 px-4 inline-flex justify-center items-center gap-2 rounded-md border border-transparent font-semibold bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all text-sm dark:focus:ring-offset-gray-800"
-                  href="#"
-                >
-                  Save changes
-                </a>
+                <div className="flex absolute bottom-0 w-full justify-end gap-x-2 py-3 px-4 border-t dark:border-gray-700">
+                  <button
+                    onClick={() => setModal(false)}
+                    className="hs-dropdown-toggle py-3 px-4 inline-flex justify-center items-center gap-2 rounded-md border font-medium bg-white text-gray-700 shadow-sm align-middle hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white focus:ring-blue-600 transition-all text-sm dark:bg-slate-900 dark:hover:bg-slate-800 dark:border-gray-700 dark:text-gray-400 dark:hover:text-white dark:focus:ring-offset-gray-800"
+                    data-hs-overlay="#hs-full-screen-modal"
+                  >
+                    Close
+                  </button>
+                  <button
+                    onClick={onSubmit}
+                    style={
+                      disabled
+                        ? { backgroundColor: "gray" }
+                        : { backgroundColor: "blue" }
+                    }
+                    className="py-3 px-4 inline-flex justify-center items-center gap-2 rounded-md border border-transparent font-semibold bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all text-sm dark:focus:ring-offset-gray-800"
+                  >
+                    Save changes
+                  </button>
+                </div>
               </div>
             </div>
           </div>

@@ -13,12 +13,12 @@ type TProperties = {
 
 type TFromBuilderProps = {
   fieldChange: () => void;
-  setSubmitDisable?: () => void;
+  setDisable?: () => void;
   properties?: TProperties[];
 };
 
 const FormBuilder = (props: TFromBuilderProps) => {
-  const { setSubmitDisable } = props;
+  const { setDisable } = props;
   const [properties, setProperties] = useState(props.properties || []);
 
   return (
@@ -91,8 +91,9 @@ const FormBuilder = (props: TFromBuilderProps) => {
         })}
       <div style={{ display: "flex", gap: 5 }}>
         <button
-        className="border px-3 bg-green-500"
-          onClick={() => {
+          className="border px-3 bg-green-500"
+          onClick={(e) => {
+            e.stopPropagation();
             let obj = {
               id: new Date().getTime(),
               key: "",
@@ -100,17 +101,17 @@ const FormBuilder = (props: TFromBuilderProps) => {
             };
             const copy = [...properties, obj];
             setProperties(copy);
-            setSubmitDisable(true);
+            setDisable(true);
           }}
         >
           Add
         </button>
         <button
-        className="border px-3 bg-green-500"
-        //   onClick={() => {
-        //     fieldChange(properties);
-        //     setSubmitDisable(false);
-        //   }}
+          className="border px-3 bg-green-500"
+          onClick={() => {
+            // fieldChange(properties);
+            setDisable(false);
+          }}
         >
           Save
         </button>

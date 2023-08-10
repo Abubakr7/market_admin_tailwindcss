@@ -7,7 +7,7 @@ export const productsApi = createApi({
   tagTypes: ["Product"],
   endpoints: (build) => ({
     getProducts: build.query({
-      query: (q) => `products?q=${q}`,
+      query: () => "products",
       providesTags: (result) => providesList(result, "Product"),
     }),
     addProduct: build.mutation({
